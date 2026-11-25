@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import type { Review } from '@/lib/types';
 import { submitReview } from '@/app/actions/reviews';
 import { Stars } from './ProductDetail';
+import { StoriesSlider } from './StoriesSlider';
 
 export function Reviews({ productSlug, productName, reviews, enabled }: { productSlug: string; productName: string; reviews: Review[]; enabled: boolean }) {
   const [open, setOpen] = useState(false);
@@ -18,10 +19,13 @@ export function Reviews({ productSlug, productName, reviews, enabled }: { produc
         <div>
           <p className="eyebrow">Customer Reviews</p>
           <h2 id="reviewsTitle" className="font-serif text-[clamp(2rem,3.4vw,3rem)] font-light leading-tight text-ink">
-            {reviews.length ? <>{avg.toFixed(1)} <em className="text-gold-deep">out of 5</em></> : <>No reviews <em className="text-gold-deep">yet</em></>}
+            {reviews.length ? <>{avg.toFixed(1)} <em className="text-gold-deep">out of 5</em></> : <>Loved across <em className="text-gold-deep">Ghana.</em></>}
           </h2>
           {reviews.length > 0 && <p className="mt-3 flex items-center gap-2 text-sm text-muted"><Stars value={avg} size={16} /> Based on {reviews.length} verified review{reviews.length === 1 ? '' : 's'}</p>}
-          <p className="mt-4 max-w-sm text-sm text-muted">Reviews come from customers whose order was delivered. You&apos;ll need your order number and the phone number you ordered with.</p>
+          {reviews.length === 0 && (
+            <p className="mt-4 max-w-sm text-muted">{productName} hasn&apos;t been reviewed yet — here&apos;s what clients say about shopping with Classy Luxe.</p>
+          )}
+          <p className="mt-4 max-w-sm text-sm text-muted">Product reviews come from customers whose order was delivered. You&apos;ll need your order number and the phone number you ordered with.</p>
           {enabled && !open && <button className="btn btn-outline mt-6" onClick={() => setOpen(true)}>Write a Review</button>}
         </div>
 
@@ -80,7 +84,9 @@ export function Reviews({ productSlug, productName, reviews, enabled }: { produc
                 </li>
               ))}
             </ul>
-          ) : <p className="text-muted">Be the first to share your experience with {productName}.</p>}
+          ) : (
+            <StoriesSlider />
+          )}
         </div>
       </div>
     </section>

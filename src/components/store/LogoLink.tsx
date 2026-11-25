@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import { animate } from 'framer-motion';
 
 /**
@@ -33,16 +34,54 @@ export function scrollToTopGently() {
   controls.then(cleanup);
 }
 
-/** The Classy Luxe logo: on the homepage it glides back to the top, elsewhere it goes home. */
+/* ── Navbar page changes: open the new page where you were, then glide to its top ── */
+let glidePending = false;
+/** Call before a navbar navigation so the next page glides up to its top. */
+export function markGlide() { glidePending = true; }
+
+/** Mounted once (in the Header): runs the glide after a navbar navigation lands. */
+export function GlideOnNavigate() {
+  const pathname = usePathname();
+  useEffect(() => {
+    if (!glidePending) return;
+    glidePending = false;
+    // wait two frames so the new page is painted before gliding
+    requestAnimationFrame(() => requestAnimationFrame(scrollToTopGently));
+  }, [pathname]);
+  return null;
+}
+
+/** Navbar link: glides to the top of the destination page instead of jumping there. */
+export function GlideLink({ href, className, children, onClick, ...rest }: Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & { href: string; children: React.ReactNode }) {
+  const pathname = usePathname();
+  return (
+    <Link
+      href={href}
+      scroll={false}
+      className={className}
+      onClick={(e) => {
+        onClick?.(e);
+        if (href === pathname) { e.preventDefault(); scrollToTopGently(); return; } // already here: glide up
+        markGlide();
+      }}
+      {...rest}
+    >
+      {children}
+    </Link>
+  );
+}
+
+/** The Classy Luxe logo: on the homepage it glides back to the top, elsewhere it goes home and glides up. */
 export function LogoLink({ className, children, onClick, ...rest }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { children: React.ReactNode }) {
   const pathname = usePathname();
   return (
     <Link
       href="/"
+      scroll={false}
       className={className}
       onClick={(e) => {
         onClick?.(e);
-        if (pathname !== '/') return;
+        if (pathname !== '/') { markGlide(); return; }
         e.preventDefault();
         if (window.location.hash) history.replaceState(null, '', '/');
         scrollToTopGently();

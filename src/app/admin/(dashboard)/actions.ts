@@ -201,14 +201,28 @@ export async function deleteCategory(formData: FormData) {
 export async function updateStock(formData: FormData) {
   const { supabase } = await requireAdmin();
   const variantId = String(formData.get('variantId'));
-  const stock = Number(formData.get('stock'));
-  const track = formData.get('track') === 'on';
-  const reason = formData.get('reason') === 'restock' ? 'restock' : 'adjustment';
-  if (!uuid.safeParse(variantId).success || !Number.isInteger(stock) || stock < 0) back('/admin/inventory', 'error', 'Enter a whole number of 0 or more.');
+  const ret = String(formData.get('return') || '');
+  const to = ret.startsWith('/admin/inventory') ? ret : '/admin/inventory';
+  if (!uuid.safeParse(variantId).success) back(to, 'error', 'Invalid item');
+
+  let stock: number;
+  let track = formData.get('track') === 'on';
+  let reason: 'restock' | 'adjustment' = formData.get('reason') === 'restock' ? 'restock' : 'adjustment';
+  const quick = Number(formData.get('quick') || 0);
+  if (quick) {
+    // quick restock: add to the current stock and switch tracking on
+    const { data: v } = await supabase.from('product_variants').select('stock').eq('id', variantId).maybeSingle();
+    stock = (v?.stock ?? 0) + Math.max(1, Math.min(1000, Math.round(quick)));
+    track = true;
+    reason = 'restock';
+  } else {
+    stock = Number(formData.get('stock'));
+  }
+  if (!Number.isInteger(stock) || stock < 0) back(to, 'error', 'Enter a whole number of 0 or more.');
   const { error } = await supabase.rpc('adjust_stock', { p_variant: variantId, p_new_stock: stock, p_track: track, p_reason: reason });
-  if (error) back('/admin/inventory', 'error', dbMessage(error));
+  if (error) back(to, 'error', dbMessage(error));
   refreshStore();
-  back('/admin/inventory', 'ok', 'Stock updated');
+  back(to, 'ok', quick ? `Restocked +${quick} (now ${stock})` : 'Stock updated');
 }
 
 export async function toggleVariant(formData: FormData) {
@@ -218,7 +232,8 @@ export async function toggleVariant(formData: FormData) {
   const { error } = await supabase.from('product_variants').update({ is_active: active }).eq('id', variantId);
   if (error) back('/admin/inventory', 'error', dbMessage(error));
   refreshStore();
-  back('/admin/inventory', 'ok', active ? 'Size is visible in the shop' : 'Size hidden from the shop');
+  const ret = String(formData.get('return') || '');
+  back(ret.startsWith('/admin/inventory') ? ret : '/admin/inventory', 'ok', active ? 'Size is back on sale' : 'Size marked unavailable');
 }
 
 /* ───────────────────────────── Orders ───────────────────────────── */
@@ -388,4 +403,19 @@ export async function updateDeliveryRate(formData: FormData) {
   if (error) back('/admin/delivery', 'error', dbMessage(error));
   refreshStore();
   back('/admin/delivery', 'ok', 'Delivery fee saved');
+}
+
+/** Set one fee for many regions at once (all regions, or only those without a fee yet). */
+export async function setRegionFees(formData: FormData) {
+  const { supabase } = await requireAdmin('manager');
+  const raw = String(formData.get('fee') ?? '').trim();
+  const scope = formData.get('scope') === 'empty' ? 'empty' : 'all';
+  const fee = raw === '' ? null : cedisToPesewas(raw);
+  if (fee !== null && (!Number.isFinite(fee) || fee < 0)) back('/admin/delivery', 'error', 'Enter a fee of 0 or more, or leave blank');
+  let q = supabase.from('delivery_rates').update({ fee_pesewas: fee }).eq('option', 'region');
+  if (scope === 'empty') q = q.is('fee_pesewas', null);
+  const { error } = await q;
+  if (error) back('/admin/delivery', 'error', dbMessage(error));
+  refreshStore();
+  back('/admin/delivery', 'ok', fee === null ? 'Regional fees cleared — confirmed on WhatsApp' : `Fee of GH₵ ${(fee / 100).toLocaleString('en-GH')} applied to ${scope === 'empty' ? 'regions without a fee' : 'all regions'}`);
 }

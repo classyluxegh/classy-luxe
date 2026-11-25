@@ -23,7 +23,7 @@ export default async function ReviewsPage({ searchParams }: Props) {
     <>
       <PageHead title="Reviews" sub="Only customers with a delivered order can submit a review. Nothing appears on the site until you approve it." />
       <Flash ok={sp.ok} error={sp.error} />
-      <div className="mb-6 flex gap-2 text-sm">
+      <div className="mb-6 flex flex-wrap gap-2 text-sm">
         {TABS.map(([v, l]) => <Link key={v} href={`/admin/reviews?status=${v}`} className={`border px-3 py-1.5 ${status === v ? 'border-ink bg-ink text-ivory' : 'border-line'}`}>{l}</Link>)}
       </div>
       <ul className="space-y-4">

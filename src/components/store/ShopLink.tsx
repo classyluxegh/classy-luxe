@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { markGlide } from './LogoLink';
 
 export interface ShopFilter { collection?: 'all' | 'student' | 'general'; category?: string }
 export const SHOP_EVENT = 'classyluxe:shop-filter';
@@ -15,7 +16,7 @@ export function scrollToShop() {
 }
 
 /** Link to the /shop page, optionally with a preset collection or category filter. */
-export function ShopLink({ collection, category, className, children, onClick, ...rest }: ShopFilter & { className?: string; children: React.ReactNode } & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'>) {
+export function ShopLink({ collection, category, className, children, onClick, glide, ...rest }: ShopFilter & { className?: string; children: React.ReactNode; /** navbar: glide to the top of /shop */ glide?: boolean } & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'>) {
   const pathname = usePathname();
   const params = new URLSearchParams();
   if (collection && collection !== 'all') params.set('collection', collection);
@@ -24,10 +25,11 @@ export function ShopLink({ collection, category, className, children, onClick, .
   return (
     <Link
       href={href}
+      scroll={glide ? false : undefined}
       className={className}
       onClick={(e) => {
         onClick?.(e);
-        if (pathname !== '/shop') return; // normal navigation to /shop
+        if (pathname !== '/shop') { if (glide) markGlide(); return; } // navigation to /shop
         // Already on the shop page: update the filters in place
         e.preventDefault();
         window.dispatchEvent(new CustomEvent<ShopFilter>(SHOP_EVENT, { detail: { collection: collection || 'all', category: category || 'all' } }));

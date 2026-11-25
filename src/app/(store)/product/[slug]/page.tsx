@@ -1,13 +1,12 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getApprovedReviews, getCatalog, getProductBySlug } from '@/lib/catalog';
+import { getCatalog, getProductBySlug } from '@/lib/catalog';
 import { displayName, minPrice } from '@/lib/types';
 import { money } from '@/lib/money';
 import { COLLECTIONS } from '@/lib/site';
 import { publicEnv } from '@/lib/env';
 import { ProductDetail } from '@/components/store/ProductDetail';
 import { ProductCard } from '@/components/store/ProductCard';
-import { Reviews } from '@/components/store/Reviews';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -38,8 +37,6 @@ export default async function ProductPage({ params }: Props) {
   const { products, settings } = await getCatalog();
   const p = products.find((x) => x.slug === slug);
   if (!p) notFound();
-  const reviews = await getApprovedReviews(p.id);
-  const rating = reviews.length ? { average: reviews.reduce((n, r) => n + r.rating, 0) / reviews.length, count: reviews.length } : undefined;
 
   const related = products
     .filter((x) => x.id !== p.id && x.collection === p.collection)
@@ -54,7 +51,6 @@ export default async function ProductPage({ params }: Props) {
     image: p.images.map((i) => i.url),
     category: p.category.name,
     brand: { '@type': 'Brand', name: settings.businessName },
-    ...(rating ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: rating.average.toFixed(1), reviewCount: rating.count } } : {}),
     offers: p.variants.map((v) => ({
       '@type': 'Offer',
       price: (v.pricePesewas / 100).toFixed(2),
@@ -68,8 +64,7 @@ export default async function ProductPage({ params }: Props) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <ProductDetail product={p} rating={rating} />
-      <Reviews productSlug={p.slug} productName={p.name} reviews={reviews} enabled={settings.reviewsEnabled} />
+      <ProductDetail product={p} />
       {related.length > 0 && (
         <section className="pdp-related">
           <div className="container">

@@ -11,6 +11,8 @@ import { ShopLink } from './ShopLink';
 import { WhatsAppIcon } from './Icons';
 import { StockNote } from './StockNote';
 import { MAX_QTY, useStore } from './StoreProvider';
+import { QtyInput } from './QtyInput';
+import { BackButton } from './BackButton';
 
 export function ProductDetail({ product: p, rating }: { product: Product; rating?: { average: number; count: number } }) {
   const { add, settings } = useStore();
@@ -52,6 +54,7 @@ export function ProductDetail({ product: p, rating }: { product: Product; rating
       </div>
 
       <div className="pdp-info">
+        <BackButton className="-mb-2 self-start" />
         <nav className="crumbs" aria-label="Breadcrumb">
           <ShopLink>Shop</ShopLink><span aria-hidden="true">/</span>
           <ShopLink collection={p.collection}>{COLLECTIONS[p.collection].name}</ShopLink><span aria-hidden="true">/</span>
@@ -90,11 +93,7 @@ export function ProductDetail({ product: p, rating }: { product: Product; rating
         )}
         {v.inStock ? (
           <div className="pdp-actions">
-            <div className="qty qty-lg" role="group" aria-label="Quantity">
-              <button aria-label="Decrease quantity" disabled={qty <= 1} onClick={() => setQty(qty - 1)}>−</button>
-              <output aria-live="polite">{qty}</output>
-              <button aria-label="Increase quantity" disabled={qty >= maxQty} onClick={() => setQty(qty + 1)}>+</button>
-            </div>
+            <QtyInput value={qty} onChange={setQty} max={maxQty} size="lg" />
             <motion.button whileTap={{ scale: 0.97 }} className="btn btn-dark" onClick={() => { add(v.id, qty); setAdded(true); setTimeout(() => setAdded(false), 1400); }}>
               {added ? 'Added to Bag ✓' : 'Add to Bag'}
             </motion.button>

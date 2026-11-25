@@ -641,7 +641,16 @@ body.drawer-open .float-wa, body.pdp-open .float-wa { opacity: 0; pointer-events
 .qty output, .qty input { width: 36px; text-align: center; font-size: .9rem; border: 0; background: none; }
 .qty-lg { height: 52px; margin-top: 0; }
 .qty-lg button { width: 46px; }
-.qty-lg output { width: 40px; }
+.qty-lg output, .qty-lg input { width: 48px; font-size: 1rem; }
+.qty input { height: 100%; color: var(--ink); font-size: 1rem; /* 16px: stops iPhones zooming in */ }
+.qty input:focus { outline: none; background: var(--beige); }
+/* Compact dark quantity pill (bag rows) */
+.qty.qty-pill { height: 34px; margin-top: 0; align-self: center; border: 0; border-radius: 6px; background: var(--ink); color: var(--ivory); padding: 0 3px; }
+.qty.qty-pill button { width: 26px; color: var(--ivory); font-size: .95rem; }
+.qty.qty-pill button:hover { background: transparent; color: var(--gold-light); }
+.qty.qty-pill button:disabled { color: rgba(247,242,234,.35); }
+.qty.qty-pill input { width: 32px; height: 26px; border-radius: 4px; background: rgba(247,242,234,.12); color: var(--ivory); font-size: .9rem; }
+.qty.qty-pill input:focus { background: rgba(247,242,234,.22); }
 
 .cart-empty { text-align: center; padding: 60px 10px; }
 .cart-empty .ph-mark { font-family: var(--serif); font-style: italic; font-size: 3.6rem; color: var(--gold); display: block; margin-bottom: 14px; }
@@ -665,10 +674,20 @@ body.drawer-open .float-wa, body.pdp-open .float-wa { opacity: 0; pointer-events
 .checkout-review li { display: flex; justify-content: space-between; gap: 12px; font-size: .86rem; padding: 4px 0; }
 .checkout-review li span:last-child { white-space: nowrap; }
 .delivery-options { display: grid; gap: 8px; }
-.delivery-options label { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid var(--line); cursor: pointer; background: #fff; transition: border-color .3s; text-transform: none; letter-spacing: 0; font-size: .92rem; color: var(--ink); }
-.delivery-options label:has(input:checked) { border-color: var(--ink); }
-.delivery-options input { accent-color: var(--ink); margin-top: 4px; }
-.delivery-options small { display: block; color: var(--muted); font-size: .78rem; }
+/* Selectable option cards (checkout delivery & payment) */
+.opt-card { display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid var(--line); background: #fff; cursor: pointer; transition: border-color .3s, background .3s; }
+.opt-card:hover { border-color: var(--sand); }
+.opt-card:has(input:checked) { border-color: var(--ink); background: var(--ivory); }
+.opt-card:has(input:focus-visible) { outline: 1.5px solid var(--gold); outline-offset: 2px; }
+.opt-card:has(input:disabled) { opacity: .5; cursor: not-allowed; }
+.opt-dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--muted-light); display: grid; place-items: center; transition: border-color .3s; }
+.opt-dot::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); transform: scale(0); transition: transform .25s var(--ease-out); }
+.opt-card:has(input:checked) .opt-dot { border-color: var(--ink); }
+.opt-card:has(input:checked) .opt-dot::after { transform: scale(1); }
+.opt-title { display: block; font-size: .95rem; color: var(--ink); }
+.opt-note { display: block; margin-top: 2px; font-size: .78rem; line-height: 1.45; color: var(--muted); }
+.opt-aside { font-size: .82rem; color: var(--ink); white-space: nowrap; text-align: right; }
+.opt-aside.muted { font-size: .72rem; color: var(--muted); }
 .handoff { text-align: center; padding: 34px 6px; display: grid; gap: 14px; justify-items: center; }
 .handoff .ph-mark { font-family: var(--serif); font-style: italic; font-size: 3rem; color: #1F7A4D; }
 .handoff h3 { font-family: var(--serif); font-weight: 400; font-size: 1.8rem; color: var(--ink); line-height: 1.15; }
@@ -845,3 +864,21 @@ body.drawer-open .float-wa, body.pdp-open .float-wa { opacity: 0; pointer-events
 }
 
 }
+
+/* Admin welcome — slow gold shimmer across the name */
+.welcome-name {
+  background: linear-gradient(100deg, var(--color-gold-light) 0%, var(--color-gold-light) 40%, #fff6e2 50%, var(--color-gold-light) 60%, var(--color-gold-light) 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  padding-right: .08em;
+  animation: nameShimmer 5s ease-in-out 1.2s infinite;
+}
+@keyframes nameShimmer { 0% { background-position: 100% 0; } 55%, 100% { background-position: -50% 0; } }
+@media (prefers-reduced-motion: reduce) { .welcome-name { animation: none; } }
+
+/* Admin modal — opens with a soft rise */
+.admin-modal[open] { animation: modalIn .22s cubic-bezier(.22,1,.36,1); }
+.admin-modal[open]::backdrop { animation: modalFade .22s ease; }
+@keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .admin-modal[open], .admin-modal[open]::backdrop { animation: none; } }

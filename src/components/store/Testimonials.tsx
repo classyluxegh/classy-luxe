@@ -117,13 +117,13 @@ export function Testimonials() {
   );
 }
 
-function initials(name: string) {
+export function initials(name: string) {
   const parts = name.trim().split(/\s+/);
   return ((parts[0]?.[0] || '') + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
 }
 
 /** Customer photo if one has been added (see lib/site.ts), otherwise elegant initials. */
-function Avatar({ t }: { t: Testimonial }) {
+export function Avatar({ t }: { t: Testimonial }) {
   return (
     <span className="relative grid h-16 w-16 place-items-center rounded-full bg-ink ring-1 ring-gold/60 ring-offset-4 ring-offset-ivory-2">
       {t.photo ? (

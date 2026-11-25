@@ -1,8 +1,9 @@
 import { requireAdmin } from '@/lib/admin';
 import { createServiceClient } from '@/lib/supabase/service';
-import { Badge, Flash, PageHead, btnDanger, btnDark, btnOutline, input } from '@/components/admin/ui';
+import { Badge, Flash, PageHead, btnDanger, btnOutline, input, btnAdd, PlusIcon } from '@/components/admin/ui';
 import { ConfirmButton, SubmitButton } from '@/components/admin/ConfirmButton';
 import { inviteAdmin, removeAdmin, updateAdmin } from '../actions';
+import { FormFooter, Modal, ModalCancel } from '@/components/admin/Modal';
 
 type Props = { searchParams: Promise<{ ok?: string; error?: string }> };
 
@@ -25,7 +26,27 @@ export default async function TeamPage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHead title="Team" sub="Admin accounts are created by invitation only — there is no public sign-up." />
+      <PageHead title="Team" sub="Admin accounts are created by invitation only — there is no public sign-up."
+        action={
+          <Modal eyebrow="Team" title="Invite someone" subtitle="They'll get an email with a link to set their password." openParam="member"
+            triggerClassName={btnAdd}
+            trigger={<><PlusIcon />Invite someone</>}>
+            <form action={inviteAdmin} className="space-y-4">
+              <label className="block text-xs text-muted">Email<input name="email" type="email" required placeholder="name@example.com" className={`${input} mt-2 h-11 rounded-lg`} /></label>
+              <label className="block text-xs text-muted">Name (optional)<input name="displayName" placeholder="e.g. Ama" className={`${input} mt-2 h-11 rounded-lg`} /></label>
+              <label className="block text-xs text-muted">Role
+                <select name="role" defaultValue="staff" className={`${input} mt-2 h-11 rounded-lg`}><option value="staff">Staff</option><option value="manager">Manager</option><option value="owner">Owner</option></select>
+              </label>
+              <dl className="space-y-1 rounded-lg border border-line bg-white p-3.5 text-xs text-muted">
+                {Object.entries(ROLE_HELP).map(([r, d]) => <div key={r}><dt className="inline capitalize text-text">{r}: </dt><dd className="inline">{d}</dd></div>)}
+              </dl>
+              <FormFooter hint="Invites are the only way to join.">
+                <ModalCancel />
+                <SubmitButton className="inline-flex h-11 items-center rounded-full bg-gold px-6 text-[.7rem] uppercase tracking-[.16em] text-ink transition-colors hover:bg-gold-light disabled:opacity-50">Send invite</SubmitButton>
+              </FormFooter>
+            </form>
+          </Modal>
+        } />
       <Flash ok={ok} error={error} />
       <div className="mb-10 space-y-3">
         {(admins || []).map((a) => (
@@ -52,15 +73,6 @@ export default async function TeamPage({ searchParams }: Props) {
         ))}
       </div>
 
-      <h2 className="mb-3 font-serif text-2xl">Invite someone</h2>
-      <form action={inviteAdmin} className="grid max-w-3xl gap-3 border border-line bg-white p-4 md:grid-cols-[2fr_1.4fr_1fr_auto] md:items-end">
-        <label className="text-xs text-muted">Email<input name="email" type="email" required className={`${input} mt-1`} /></label>
-        <label className="text-xs text-muted">Name (optional)<input name="displayName" className={`${input} mt-1`} /></label>
-        <label className="text-xs text-muted">Role
-          <select name="role" defaultValue="staff" className={`${input} mt-1`}><option value="staff">Staff</option><option value="manager">Manager</option><option value="owner">Owner</option></select>
-        </label>
-        <SubmitButton className={btnDark}>Send invite</SubmitButton>
-      </form>
       <dl className="mt-6 max-w-3xl space-y-1 text-xs text-muted">
         {Object.entries(ROLE_HELP).map(([r, d]) => <div key={r}><dt className="inline capitalize text-text">{r}: </dt><dd className="inline">{d}</dd></div>)}
       </dl>

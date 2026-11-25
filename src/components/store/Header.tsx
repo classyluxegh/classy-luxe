@@ -6,12 +6,12 @@ import { useEffect, useState } from 'react';
 import { BagIcon } from './Icons';
 import { WaLink } from './WaLink';
 import { ShopLink } from './ShopLink';
-import { LogoLink } from './LogoLink';
+import { GlideLink, GlideOnNavigate, LogoLink } from './LogoLink';
 import { useStore } from './StoreProvider';
 import { motion } from 'framer-motion';
 
 const NAV = [
-  { href: '/#top', label: 'Home' },
+  { href: '/', label: 'Home' },
   { href: '/shop', label: 'Shop' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' }
@@ -59,11 +59,11 @@ export function Header() {
           </LogoLink>
           <nav className="main-nav" aria-label="Main">
             {NAV.map((n) => n.href === '/shop'
-              ? <ShopLink key={n.href} className={pathname === '/shop' ? 'active' : undefined}>{n.label}</ShopLink>
-              : <Link key={n.href} href={n.href}>{n.label}</Link>)}
+              ? <ShopLink key={n.href} glide className={pathname === '/shop' ? 'active' : undefined}>{n.label}</ShopLink>
+              : <GlideLink key={n.href} href={n.href}>{n.label}</GlideLink>)}
           </nav>
           <div className="header-actions">
-            <ShopLink className="btn btn-gold btn-sm header-cta">Shop Now</ShopLink>
+            <ShopLink glide className="btn btn-gold btn-sm header-cta">Shop Now</ShopLink>
             <button className="icon-btn cart-btn" aria-label={`Open shopping bag, ${count} item${count === 1 ? '' : 's'}`} onClick={openDrawer}>
               <BagIcon />
               <motion.span key={bump} initial={bump ? { scale: 1.6 } : false} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 18 }}
@@ -72,15 +72,18 @@ export function Header() {
           </div>
         </div>
       </header>
+      <GlideOnNavigate />
 
       <div className={`mobile-nav${menu ? ' open' : ''}`} id="mobileNav" aria-hidden={!menu}>
         <nav aria-label="Mobile">
           {[...NAV.slice(0, 2), { href: '/#finder', label: 'Find Your Scent' }, NAV[2], { href: '/#delivery', label: 'Delivery' }, NAV[3]].map((n) => (
-            <Link key={n.href} href={n.href} onClick={() => setMenu(false)} tabIndex={menu ? 0 : -1}>{n.label}</Link>
+            n.href.includes('#')
+              ? <Link key={n.href} href={n.href} onClick={() => setMenu(false)} tabIndex={menu ? 0 : -1}>{n.label}</Link>
+              : <GlideLink key={n.href} href={n.href} onClick={() => setMenu(false)} tabIndex={menu ? 0 : -1}>{n.label}</GlideLink>
           ))}
         </nav>
         <div className="mobile-nav-foot">
-          <ShopLink className="btn btn-gold" onClick={() => setMenu(false)} tabIndex={menu ? 0 : -1}>Shop the Collection</ShopLink>
+          <ShopLink glide className="btn btn-gold" onClick={() => setMenu(false)} tabIndex={menu ? 0 : -1}>Shop the Collection</ShopLink>
           <p>WhatsApp <WaLink tabIndex={menu ? 0 : -1}>{settings.whatsappDisplay}</WaLink></p>
           {settings.businessHoursShort && <p>{settings.businessHoursShort}</p>}
         </div>

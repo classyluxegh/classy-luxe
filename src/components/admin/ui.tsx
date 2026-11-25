@@ -1,5 +1,13 @@
 import Link from 'next/link';
 
+/** Gold "+ Add …" button used at the top of admin pages. */
+export const btnAdd = 'inline-flex h-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-gold pl-4 pr-5 text-[.7rem] font-medium uppercase leading-none tracking-[.16em] text-ink shadow-[0_6px_18px_rgba(156,124,64,.25)] transition-colors hover:bg-gold-light';
+
+/** Crisp plus icon that sits centred next to button text. */
+export function PlusIcon() {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>;
+}
+
 export const input = 'h-10 w-full border border-line bg-white px-3 text-sm text-ink outline-none focus:border-gold-deep';
 export const btn = 'inline-flex h-10 items-center justify-center gap-2 px-4 text-[.7rem] uppercase tracking-[.16em] transition disabled:opacity-50';
 export const btnDark = `${btn} bg-ink text-ivory hover:bg-charcoal-2`;
@@ -10,7 +18,7 @@ export function PageHead({ title, sub, action }: { title: string; sub?: string; 
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="font-serif text-4xl font-light text-ink">{title}</h1>
+        <h1 className="font-serif text-[clamp(2rem,6vw,2.25rem)] font-light text-ink">{title}</h1>
         {sub && <p className="mt-1 text-sm text-muted">{sub}</p>}
       </div>
       {action}

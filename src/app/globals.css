@@ -324,8 +324,30 @@ body.nav-open .site-header { background: transparent; color: var(--ivory); box-s
 .card-media { position: relative; aspect-ratio: 4/5; overflow: hidden; background: var(--beige); display: block; width: 100%; }
 .card-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease-out), opacity .6s; }
 .card:hover .card-media img { transform: scale(1.06); }
-.card-badge { position: absolute; top: 14px; left: 14px; z-index: 2; background: var(--ivory-2); color: var(--ink); font-size: .58rem; letter-spacing: .2em; text-transform: uppercase; padding: 6px 10px; }
-.card-badge.new { background: var(--ink); color: var(--gold-light); }
+.card-badge {
+  position: absolute; top: 14px; left: 14px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 11px 6px 9px; border-radius: 999px;
+  background: rgba(250, 247, 242, .9); color: var(--ink);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  box-shadow: 0 6px 18px rgba(15, 13, 11, .12);
+  font-size: .56rem; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; line-height: 1;
+}
+.card-badge::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: var(--gold); flex: none; }
+/* Bestseller — gold */
+.card-badge.best { background: var(--gold); color: var(--ink); }
+.card-badge.best::before { background: var(--ink); }
+/* New arrival — dark with gold */
+.card-badge.new { background: rgba(15, 13, 11, .88); color: var(--gold-light); }
+.card-badge.new::before { background: var(--gold-light); }
+/* Running low — soft gold */
+.card-badge.low { background: rgba(201, 169, 110, .92); color: var(--ink); }
+.card-badge.low::before { background: var(--ink); animation: badgePulse 1.6s ease-in-out infinite; }
+/* Out of stock — muted */
+.card-badge.out { background: rgba(15, 13, 11, .78); color: var(--ivory); }
+.card-badge.out::before { background: rgba(250, 247, 242, .5); }
+@keyframes badgePulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .card-badge.low::before { animation: none; } }
 .card-quick {
   position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 2;
   display: flex; min-height: 46px; align-items: center; justify-content: center;
@@ -808,7 +830,7 @@ body.drawer-open .float-wa, body.pdp-open .float-wa { opacity: 0; pointer-events
   .card-foot { flex-direction: column; align-items: flex-start; gap: 6px; }
   .price { font-size: 1.15rem; }
   .card-quick { display: none; }
-  .card-badge { top: 8px; left: 8px; font-size: .52rem; padding: 5px 7px; }
+  .card-badge { top: 8px; left: 8px; font-size: .5rem; padding: 5px 8px 5px 7px; gap: 5px; letter-spacing: .14em; }
 
   .shop-toolbar { position: static; flex-direction: column; align-items: stretch; padding: 14px 0; }
   .collection-switch { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
@@ -882,3 +904,7 @@ body.drawer-open .float-wa, body.pdp-open .float-wa { opacity: 0; pointer-events
 @keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(.985); } to { opacity: 1; transform: none; } }
 @keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .admin-modal[open], .admin-modal[open]::backdrop { animation: none; } }
+
+/* Scroll without a visible scrollbar (admin sidebar) */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

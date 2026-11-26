@@ -39,7 +39,7 @@ export function ProductDetail({ product: p, rating }: { product: Product; rating
               <ProductImage src={img?.url} alt={img?.alt || displayName(p)} name={p.name} sizes="(max-width: 1024px) 100vw, 55vw" priority={imgIndex === 0} />
             </motion.div>
           </AnimatePresence>
-          {p.badge && <span className={`card-badge${p.badge === 'New Arrival' ? ' new' : ''}`}>{p.badge}</span>}
+          {p.badge && <span className={`card-badge${p.badge === 'New Arrival' ? ' new' : p.badge === 'Bestseller' ? ' best' : ''}`}>{p.badge}</span>}
         </div>
         {p.images.length > 1 && (
           <div className="flex gap-2 overflow-x-auto bg-ivory p-3" role="group" aria-label="Product images">

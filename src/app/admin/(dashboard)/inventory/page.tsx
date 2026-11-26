@@ -92,14 +92,14 @@ export default async function InventoryPage({ searchParams }: Props) {
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat label="Units in stock" value={String(unitsInStock)} hint={`${counts.tracked} of ${counts.all} sizes tracked`} />
         <Stat label="Running low" value={String(counts.low)} hint={`At or below ${low} units`} tone={counts.low ? 'warn' : undefined} />
-        <Stat label="Sold out" value={String(counts.out)} hint="Tracked sizes at 0" tone={counts.out ? 'bad' : undefined} />
+        <Stat label="Out of stock" value={String(counts.out)} hint="Sizes customers can’t order" tone={counts.out ? 'bad' : undefined} />
         <Stat label="Unavailable" value={String(counts.hidden)} hint="Sizes hidden from the shop" />
       </section>
 
       {/* filters */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <nav className="flex flex-wrap gap-1.5" aria-label="Filter">
-          {([['all', 'All'], ['tracked', 'Tracked'], ['low', 'Low'], ['out', 'Sold out'], ['untracked', 'Not tracked'], ['hidden', 'Unavailable']] as const).map(([f, l]) => (
+          {([['all', 'All'], ['tracked', 'Tracked'], ['low', 'Low'], ['out', 'Out of stock'], ['untracked', 'Not tracked'], ['hidden', 'Unavailable']] as const).map(([f, l]) => (
             <Link key={f} href={tabHref(f)} className={`rounded-full border px-3.5 py-1.5 text-xs transition-colors ${filter === f ? 'border-ink bg-ink text-ivory' : 'border-line bg-white text-text hover:border-ink'}`}>
               {l} <span className={filter === f ? 'text-gold-light' : 'text-muted'}>{counts[f]}</span>
             </Link>
@@ -140,7 +140,7 @@ export default async function InventoryPage({ searchParams }: Props) {
                             <span>
                               {state === 'hidden' && <Badge>Unavailable</Badge>}
                               {state === 'untracked' && <Badge tone="good">Always available</Badge>}
-                              {state === 'out' && <Badge tone="bad">Sold out</Badge>}
+                              {state === 'out' && <Badge tone="bad">Out of stock</Badge>}
                               {state === 'low' && <Badge tone="warn">Running low</Badge>}
                               {state === 'ok' && <Badge tone="good">In stock</Badge>}
                             </span>
@@ -173,6 +173,27 @@ export default async function InventoryPage({ searchParams }: Props) {
                             <input name="stock" type="number" min={0} max={100000} defaultValue={r.stock} aria-label={`Stock for ${p.name} ${r.label}`} className="h-7 w-16 rounded-full border border-line bg-white px-2 text-center text-sm outline-none focus:border-gold-deep" />
                             <SubmitButton className="h-7 rounded-full bg-ink px-3 text-[.66rem] uppercase tracking-[.12em] text-ivory disabled:opacity-50">Set</SubmitButton>
                           </form>
+                          {/* out of stock / back in stock */}
+                          {r.is_active && (state === 'out' ? (
+                            <form action={updateStock}>
+                              <input type="hidden" name="variantId" value={r.id} />
+                              <input type="hidden" name="return" value={here} />
+                              <input type="hidden" name="stock" value="0" />
+                              <input type="hidden" name="reason" value="adjustment" />
+                              <input type="hidden" name="intent" value="back-in-stock" />
+                              <SubmitButton className="h-8 rounded-full border border-whatsapp/40 px-3 text-xs text-whatsapp transition-colors hover:bg-whatsapp hover:text-white disabled:opacity-50">Back in stock</SubmitButton>
+                            </form>
+                          ) : (
+                            <form action={updateStock}>
+                              <input type="hidden" name="variantId" value={r.id} />
+                              <input type="hidden" name="return" value={here} />
+                              <input type="hidden" name="stock" value="0" />
+                              <input type="hidden" name="track" value="on" />
+                              <input type="hidden" name="reason" value="adjustment" />
+                              <input type="hidden" name="intent" value="out-of-stock" />
+                              <SubmitButton className="h-8 rounded-full border border-danger/30 px-3 text-xs text-danger transition-colors hover:bg-danger hover:text-white disabled:opacity-50">Out of stock</SubmitButton>
+                            </form>
+                          ))}
                           {manager && (
                             <form action={toggleVariant}>
                               <input type="hidden" name="variantId" value={r.id} />

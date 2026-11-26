@@ -155,7 +155,7 @@ export default async function ProductsPage({ searchParams }: Props) {
                   )}
 
                   <p className={`mt-3 text-xs ${tracked.length && stock === 0 ? 'text-danger' : tracked.length && stock <= 3 ? 'text-gold-deep' : 'text-muted'}`}>
-                    {tracked.length ? (stock === 0 ? 'Sold out' : `${stock} in stock`) : 'Always available'}
+                    {tracked.length ? (stock === 0 ? 'Out of stock' : `${stock} in stock`) : 'Always available'}
                   </p>
 
                   <div className="mt-auto flex items-center justify-between gap-3 border-t border-line pt-4 text-xs">

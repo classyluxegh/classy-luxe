@@ -27,8 +27,8 @@ export function Header() {
 
   useEffect(() => {
     if (!overHero) { setSolid(true); return; }
-    const hero = document.querySelector<HTMLElement>('.hero');
-    const onScroll = () => setSolid(window.scrollY > Math.max(40, (hero?.offsetHeight ?? 400) - 90));
+    // Turn solid the moment the page starts scrolling
+    const onScroll = () => setSolid(window.scrollY > 4);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);

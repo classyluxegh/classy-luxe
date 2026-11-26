@@ -33,17 +33,9 @@ export function ModalCancel({ className = '' }: { className?: string }) {
   );
 }
 
-/** Sticky footer bar for forms shown in a modal (or a normal bar on a page). */
-export function FormFooter({ hint, children }: { hint?: React.ReactNode; children: React.ReactNode }) {
-  const modal = useModal();
-  return (
-    <div className={modal
-      ? 'sticky bottom-0 z-10 -mx-6 -mb-6 mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-white/95 px-6 py-4 backdrop-blur sm:-mx-8 sm:px-8'
-      : 'flex flex-wrap items-center justify-between gap-3 pt-2'}>
-      <p className="text-xs text-muted">{hint}</p>
-      <div className="flex items-center gap-2">{children}</div>
-    </div>
-  );
+/** The form's buttons, right-aligned. `hint` is kept for callers but no longer shown. */
+export function FormFooter({ children }: { hint?: React.ReactNode; children: React.ReactNode }) {
+  return <div className="flex flex-wrap items-center justify-end gap-2 pt-2">{children}</div>;
 }
 
 /**
@@ -100,9 +92,9 @@ export function Modal({ trigger, triggerClassName = '', eyebrow, title, subtitle
       >
         {open && (
           <ModalContext.Provider value={{ close }}>
-            <div className="flex max-h-[calc(100dvh-1.5rem)] flex-col">
+            <div className="flex max-h-[calc(100dvh-1.5rem)] min-h-0 flex-col">
               {/* Header */}
-              <header className="relative overflow-hidden border-b border-line bg-white px-6 py-6 sm:px-8">
+              <header className="relative shrink-0 overflow-hidden border-b border-line bg-white px-6 py-6 sm:px-8">
                 <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-linear-to-r from-gold-light via-gold to-gold-light" />
                 <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_120%_at_100%_0%,rgba(201,169,110,.12),transparent_60%)]" />
                 <div className="relative flex items-start justify-between gap-4">
@@ -118,7 +110,7 @@ export function Modal({ trigger, triggerClassName = '', eyebrow, title, subtitle
                 </div>
               </header>
               {/* Body */}
-              <div className="overflow-y-auto px-6 pt-6 pb-6 sm:px-8">{children}</div>
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pt-6 pb-6 sm:px-8">{children}</div>
             </div>
           </ModalContext.Provider>
         )}

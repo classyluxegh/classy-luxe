@@ -35,10 +35,10 @@ export function ProductCard({ product: p, index = 0, dark }: { product: Product;
             sizes="(max-width: 720px) 50vw, (max-width: 1180px) 33vw, 25vw" className="object-cover" />
         </Link>
         {!p.available
-          ? <span className="card-badge !bg-ink !text-ivory">Out of stock</span>
+          ? <span className="card-badge out">Out of stock</span>
           : !multi && stock.tone === 'low'
-            ? <span className="card-badge !bg-gold !text-ink">{stock.text}</span>
-            : p.badge && <span className={`card-badge${p.badge === 'New Arrival' ? ' new' : ''}`}>{p.badge}</span>}
+            ? <span className="card-badge low">{stock.text}</span>
+            : p.badge && <span className={`card-badge${p.badge === 'New Arrival' ? ' new' : p.badge === 'Bestseller' ? ' best' : ''}`}>{p.badge}</span>}
         {p.available && <button className="card-quick" onClick={onAdd}>{multi ? 'Choose size' : added ? 'Added ✓' : 'Quick add'}</button>}
       </div>
       <div className="card-body">

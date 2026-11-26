@@ -222,7 +222,11 @@ export async function updateStock(formData: FormData) {
   const { error } = await supabase.rpc('adjust_stock', { p_variant: variantId, p_new_stock: stock, p_track: track, p_reason: reason });
   if (error) back(to, 'error', dbMessage(error));
   refreshStore();
-  back(to, 'ok', quick ? `Restocked +${quick} (now ${stock})` : 'Stock updated');
+  const intent = formData.get('intent');
+  back(to, 'ok', quick ? `Restocked +${quick} (now ${stock})`
+    : intent === 'out-of-stock' ? 'Marked out of stock — customers can no longer order this size'
+    : intent === 'back-in-stock' ? 'Back in stock — always available again (stock not counted)'
+    : 'Stock updated');
 }
 
 export async function toggleVariant(formData: FormData) {

@@ -34,7 +34,7 @@ export default async function Dashboard({ searchParams }: Props) {
   const { supabase, role, name } = await requireAdmin();
   const [{ data, error }, { data: recent }] = await Promise.all([
     supabase.rpc('admin_sales_summary', { p_days: days }),
-    supabase.from('orders').select('id, order_number, customer_name, total_pesewas, status, payment_status, created_at').order('created_at', { ascending: false }).limit(6)
+    supabase.from('orders').select('id, order_number, customer_name, total_pesewas, status, payment_status, payment_method, created_at, order_items(product_name, quantity)').order('created_at', { ascending: false }).limit(6)
   ]);
   if (error) return <p className="text-danger">Could not load statistics: {error.message}</p>;
   const s = data as Summary;
@@ -163,31 +163,71 @@ export default async function Dashboard({ searchParams }: Props) {
       </div>
 
       {/* ── Recent orders ── */}
-      <Panel title="Recent orders" action={<Link href="/admin/orders" className="text-xs text-gold-deep hover:underline">View all →</Link>}>
+      <Panel title="Recent orders" action={<Link href="/admin/orders" className="group inline-flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-xs text-ink transition-colors hover:border-gold hover:text-gold-deep">View all orders <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span></Link>}>
         {recent?.length ? (
-          <div className="-mx-2 overflow-x-auto">
-            <table className="w-full min-w-[620px] text-sm">
-              <thead className="text-left text-[.64rem] uppercase tracking-[.16em] text-muted">
-                <tr><th className="px-2 pb-3 font-normal">Order</th><th className="px-2 pb-3 font-normal">Customer</th><th className="px-2 pb-3 font-normal">Date</th><th className="px-2 pb-3 font-normal">Total</th><th className="px-2 pb-3 font-normal">Status</th><th className="px-2 pb-3 font-normal">Payment</th></tr>
-              </thead>
-              <tbody>
-                {recent.map((o) => (
-                  <tr key={o.id} className="border-t border-line transition-colors hover:bg-ivory">
-                    <td className="px-2 py-3"><Link href={`/admin/orders/${o.id}`} className="font-medium hover:text-gold-deep">{o.order_number}</Link></td>
-                    <td className="px-2 py-3">{o.customer_name}</td>
-                    <td className="px-2 py-3 text-muted">{new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Africa/Accra' })}</td>
-                    <td className="px-2 py-3">{money(o.total_pesewas)}</td>
-                    <td className="px-2 py-3"><Badge tone={statusTone(o.status)}>{o.status.replace(/_/g, ' ')}</Badge></td>
-                    <td className="px-2 py-3"><Badge tone={statusTone(o.payment_status)}>{o.payment_status}</Badge></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="-mx-6 border-t border-line">
+            <div className="hidden gap-4 border-b border-line bg-ivory px-6 py-3 text-[.62rem] uppercase tracking-[.18em] text-muted lg:grid lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1.6fr)_minmax(0,.9fr)_minmax(0,1.3fr)_minmax(0,.9fr)_20px]">
+              <span>Customer</span><span>Items</span><span>Placed</span><span>Status</span><span className="text-right">Total</span><span />
+            </div>
+            <ul className="divide-y divide-line">
+              {recent.map((o) => {
+                const items = (o.order_items || []) as { product_name: string; quantity: number }[];
+                const units = items.reduce((n, it) => n + it.quantity, 0);
+                const what = items.map((it) => `${it.product_name}${it.quantity > 1 ? ` × ${it.quantity}` : ''}`).join(', ');
+                const owes = o.status !== 'cancelled' && !['paid', 'refunded'].includes(o.payment_status);
+                const initials = String(o.customer_name).split(/\s+/).filter(Boolean).slice(0, 2).map((w: string) => w[0]?.toUpperCase()).join('') || '?';
+                return (
+                  <li key={o.id} className="relative">
+                    {owes && <span aria-hidden="true" className="absolute inset-y-0 left-0 w-[3px] bg-gold" />}
+                    <Link href={`/admin/orders/${o.id}`} className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 px-6 py-4 transition-colors hover:bg-ivory/70 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1.6fr)_minmax(0,.9fr)_minmax(0,1.3fr)_minmax(0,.9fr)_20px]">
+                      {/* customer + order */}
+                      <span className="flex min-w-0 items-center gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sand font-serif text-sm text-gold-deep">{initials}</span>
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm text-ink">{o.customer_name}</span>
+                          <span className="block text-xs text-muted">{o.order_number} · {o.payment_method === 'paystack' ? 'Paystack' : 'WhatsApp'}</span>
+                        </span>
+                      </span>
+                      {/* items */}
+                      <span className="order-3 col-span-2 min-w-0 pl-12 lg:order-none lg:col-span-1 lg:pl-0">
+                        <span className="block truncate text-sm text-text">{what || 'No items'}</span>
+                        <span className="block text-xs text-muted">{units} item{units === 1 ? '' : 's'}</span>
+                      </span>
+                      {/* placed */}
+                      <span className="hidden text-sm text-muted lg:block">{ago(o.created_at)}</span>
+                      {/* status */}
+                      <span className="order-4 col-span-2 flex flex-wrap gap-1.5 pl-12 lg:order-none lg:col-span-1 lg:pl-0">
+                        <Badge tone={statusTone(o.status)}>{o.status.replace(/_/g, ' ')}</Badge>
+                        <Badge tone={statusTone(o.payment_status)}>{o.payment_status}</Badge>
+                      </span>
+                      {/* total */}
+                      <span className="text-right">
+                        <span className={`block font-serif text-xl leading-none ${owes ? 'text-gold-deep' : 'text-ink'}`}>{money(o.total_pesewas)}</span>
+                        <span className="mt-1 block text-[.68rem] text-muted lg:hidden">{ago(o.created_at)}</span>
+                        {owes && <span className="mt-1 hidden text-[.68rem] text-gold-deep lg:block">To be paid</span>}
+                      </span>
+                      <span aria-hidden="true" className="hidden text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-gold-deep lg:block">→</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         ) : <Empty text="No orders yet. When customers check out, their orders appear here." />}
       </Panel>
     </div>
   );
+}
+
+/** "Just now", "12 min ago", "3 hours ago", "Yesterday", "25 Nov". */
+function ago(iso: string) {
+  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
+  if (hrs < 48) return 'Yesterday';
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Africa/Accra' });
 }
 
 function Panel({ title, action, children }: { title?: string; action?: React.ReactNode; children: React.ReactNode }) {

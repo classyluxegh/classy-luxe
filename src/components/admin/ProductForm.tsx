@@ -215,11 +215,11 @@ function CheckCard({ name, defaultChecked, title, text }: { name: string; defaul
 function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
     <button type="button" role="switch" aria-checked={checked} onClick={() => onChange(!checked)}
-      className="flex items-center gap-2 px-1 text-xs text-muted">
-      <span className={`relative h-5 w-9 rounded-full transition-colors ${checked ? 'bg-[#1F7A4D]' : 'bg-line'}`}>
-        <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
+      className="inline-flex shrink-0 items-center gap-2 px-1 text-xs text-muted">
+      <span className={`relative inline-block h-5 w-9 shrink-0 rounded-full transition-colors ${checked ? 'bg-[#1F7A4D]' : 'bg-line'}`}>
+        <span className={`absolute left-0.5 top-0.5 block h-4 w-4 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-4' : 'translate-x-0'}`} />
       </span>
-      {label}
+      <span className={checked ? 'text-[#1F7A4D]' : ''}>{label}</span>
     </button>
   );
 }
